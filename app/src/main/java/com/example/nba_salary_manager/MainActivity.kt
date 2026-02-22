@@ -7,9 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -21,26 +21,30 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import com.example.nba_salary_manager.ui.screens.GamesScreen
+import com.example.nba_salary_manager.ui.screens.PlayersScreen
+import com.example.nba_salary_manager.ui.screens.TeamsScreen
 import com.example.nba_salary_manager.ui.theme.NBA_SALARY_MANAGERTheme
+import com.example.nba_salary_manager.viewmodel.NbaViewModel
 
 class MainActivity : ComponentActivity() {
+
+    private val nbaViewModel by lazy { NbaViewModel() }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             NBA_SALARY_MANAGERTheme {
-                NBA_SALARY_MANAGERApp()
+                NBA_SALARY_MANAGERApp(nbaViewModel)
             }
         }
     }
 }
 
-@PreviewScreenSizes
 @Composable
-fun NBA_SALARY_MANAGERApp() {
-    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
+fun NBA_SALARY_MANAGERApp(nbaViewModel: NbaViewModel) {
+    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.TEAMS) }
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -60,10 +64,20 @@ fun NBA_SALARY_MANAGERApp() {
         }
     ) {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            Greeting(
-                name = "Android",
-                modifier = Modifier.padding(innerPadding)
-            )
+            when (currentDestination) {
+                AppDestinations.TEAMS -> TeamsScreen(
+                    viewModel = nbaViewModel,
+                    modifier = Modifier.padding(innerPadding)
+                )
+                AppDestinations.PLAYERS -> PlayersScreen(
+                    viewModel = nbaViewModel,
+                    modifier = Modifier.padding(innerPadding)
+                )
+                AppDestinations.GAMES -> GamesScreen(
+                    viewModel = nbaViewModel,
+                    modifier = Modifier.padding(innerPadding)
+                )
+            }
         }
     }
 }
@@ -72,23 +86,7 @@ enum class AppDestinations(
     val label: String,
     val icon: ImageVector,
 ) {
-    HOME("Home", Icons.Default.Home),
-    FAVORITES("Favorites", Icons.Default.Favorite),
-    PROFILE("Profile", Icons.Default.AccountBox),
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    NBA_SALARY_MANAGERTheme {
-        Greeting("Android")
-    }
+    TEAMS("Equipos", Icons.Default.Home),
+    PLAYERS("Jugadores", Icons.Default.Person),
+    GAMES("Partidos", Icons.Default.DateRange),
 }
