@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nba_salary_manager.data.api.RetrofitClient
 import com.example.nba_salary_manager.data.model.Game
+import com.example.nba_salary_manager.data.model.LoginRequest
 import com.example.nba_salary_manager.data.model.Player
 import com.example.nba_salary_manager.data.model.Team
 import kotlinx.coroutines.launch
@@ -56,6 +57,22 @@ class NbaViewModel : ViewModel() {
         loadPlayers()
         loadGames()
     }
+
+    fun loginUser(email: String, pass: String, onResult: (Boolean) -> Unit) {
+            viewModelScope.launch {
+                try {
+                    // Asegúrate de que LoginRequest y RetrofitClient estén importados
+                    val response = RetrofitClient.authApi.login(LoginRequest(email, pass))
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        onResult(true)
+                    } else {
+                        onResult(false)
+                    }
+                } catch (e: Exception) {
+                    onResult(false)
+                }
+            }
+        }
 
     // ── Teams ──
 

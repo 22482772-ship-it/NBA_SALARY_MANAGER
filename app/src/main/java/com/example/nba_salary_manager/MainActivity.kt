@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.launch
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -22,17 +21,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.lifecycle.viewModelScope
-import com.example.nba_salary_manager.data.api.RetrofitClient
-import com.example.nba_salary_manager.data.model.LoginRequest
 import com.example.nba_salary_manager.ui.screens.GamesScreen
 import com.example.nba_salary_manager.ui.screens.PlayersScreen
 import com.example.nba_salary_manager.ui.screens.TeamsScreen
+import com.example.nba_salary_manager.ui.screens.LoginScreen // Asegúrate de que este archivo existe
 import com.example.nba_salary_manager.ui.theme.NBA_SALARY_MANAGERTheme
 import com.example.nba_salary_manager.viewmodel.NbaViewModel
 
 class MainActivity : ComponentActivity() {
 
+    // Instanciamos el ViewModel una sola vez para toda la Activity
     private val nbaViewModel by lazy { NbaViewModel() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,23 +38,20 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NBA_SALARY_MANAGERTheme {
-                NBA_SALARY_MANAGERApp(nbaViewModel)
-            }
-        }
-    }
-}
+                // Estado que recuerda si el usuario ya se ha logueado correctamente
+                var isLoggedIn by rememberSaveable { mutableStateOf(false) }
 
-fun loginUser(email: String, pass: String, onResult: (Boolean) -> Unit) {
-    viewModelScope.launch {
-        try {
-            val response = RetrofitClient.authApi.login(LoginRequest(email, pass))
-            if (response.isSuccessful && response.body()?.success == true) {
-                onResult(true)
-            } else {
-                onResult(false)
+                if (!isLoggedIn) {
+                    // Si NO está logueado, mostramos la pantalla de Login
+                    LoginScreen(
+                        viewModel = nbaViewModel,
+                        onLoginSuccess = { isLoggedIn = true } // Al tener éxito, cambiamos el estado
+                    )
+                } else {
+                    // Si YA está logueado, mostramos la App principal con el menú
+                    NBA_SALARY_MANAGERApp(nbaViewModel)
+                }
             }
-        } catch (e: Exception) {
-            onResult(false)
         }
     }
 }
@@ -69,12 +64,7 @@ fun NBA_SALARY_MANAGERApp(nbaViewModel: NbaViewModel) {
         navigationSuiteItems = {
             AppDestinations.entries.forEach {
                 item(
-                    icon = {
-                        Icon(
-                            it.icon,
-                            contentDescription = it.label
-                        )
-                    },
+                    icon = { Icon(it.icon, contentDescription = it.label) },
                     label = { Text(it.label) },
                     selected = it == currentDestination,
                     onClick = { currentDestination = it }
