@@ -7,9 +7,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
-    private const val BASE_URL = "https://api.balldontlie.io/v1/"
-
-    // ⚠️ Replace with your own API key from https://app.balldontlie.io/signup
+    // --- CONFIGURACIÓN NBA ---
+    private const val BASE_URL_NBA = "https://api.balldontlie.io/v1/"
     private const val API_KEY = "52dce931-a79f-44da-8a1a-aa9fa102dbbc"
 
     private val authInterceptor = Interceptor { chain ->
@@ -19,16 +18,28 @@ object RetrofitClient {
         chain.proceed(request)
     }
 
-    private val okHttpClient = OkHttpClient.Builder()
+    private val okHttpClientNba = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
         .build()
 
     val api: NbaApiService by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(okHttpClient)
+            .baseUrl(BASE_URL_NBA)
+            .client(okHttpClientNba)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(NbaApiService::class.java)
+    }
+
+    // --- CONFIGURACIÓN TU PROPIA API (LOGIN) ---
+    // Si pruebas en el emulador de Android, usa "http://10.0.2.2/" para referirte al localhost de tu PC
+    private const val BASE_URL_MYSYSTEM = "http://10.0.2.2/mi_api_nba/"
+
+    val authApi: AuthApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL_MYSYSTEM)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(AuthApiService::class.java)
     }
 }
